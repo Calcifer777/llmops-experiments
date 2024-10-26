@@ -28,6 +28,7 @@ MODEL_STORAGE = "./models/"
 MODEL_NAME = "sample_retrieval_qa"
 MODEL_VERSION = "latest"
 
+VECTORSTORE_FOLDER = "./assets/faiss-db/"
 
 LLM = FakeListLLM(responses=["hi", "hello"])
 
@@ -37,6 +38,7 @@ VECTORSTORE = FAISS(
     docstore=InMemoryDocstore(),
     index_to_docstore_id={},
 )
+
 
 def retrieval_qa():
     retriever = VectorStoreRetriever(vectorstore=VECTORSTORE)
@@ -55,8 +57,7 @@ def retrieval_qa():
 
     qa = RetrievalQA.from_llm(llm=LLM, retriever=retriever)
 
-    fn_faiss = "index.faiss"
-    VECTORSTORE.save_local(fn_faiss)
+    VECTORSTORE.save_local(VECTORSTORE_FOLDER)
 
     def load_retriever(persist_directory: str):
         vectorstore = FAISS.load_local(
@@ -74,7 +75,7 @@ def retrieval_qa():
         lc_model=qa,
         artifact_path=MODEL_NAME,
         loader_fn=load_retriever,
-        persist_dir=fn_faiss,
+        persist_dir=VECTORSTORE_FOLDER,
         model_config=dict(chain_type="retrieval_qa"),
     )
 
